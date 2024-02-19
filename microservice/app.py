@@ -18,7 +18,7 @@ def devops_endpoint(service_name, major_version):
     sender_name = data['from']
     receiver_name = data['to']
 
-    response_message = f"Hello {sender_name}, your message will be sent."
+    response_message = f"Hello {sender_name}, your message will be sent to {receiver_name}."
     return jsonify({"service_name": service_name, "major_version": major_version, "message": response_message})
 
 @app.route('/', methods=['GET'])

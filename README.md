@@ -118,4 +118,70 @@ kubectl port-forward svc/microservice1-1 8080:80 & sleep 5 && curl localhost:808
 export EXPECTED_API_KEY='2f5ae96c-b558-4c7b-a590-a501ae1c3f6c' && export HOST=test2.nestorurquiza.com && curl -kX POST -H "X-Parse-REST-API-Key: ${EXPECTED_API_KEY}" -H "Content-Type: application/json" -d '{ "message": "This is a test", "to": "Juan Perez", "from": "Rita Asturia", "timeToLifeSec": 45 }' http://${HOST}/api/microservice1/v1/DevOps
 ```
  
- 
+## Services SDLC
+Whether you are maintaining a monolith or multiple microservices you have to handle API versions. Here is one way to handle that.
+
+- Branch microservice version 1
+```
+git checkout -b microservice-1
+git push -u origin microservice-1
+```
+- To switch to microservice version 1 and merge new code from branch into it
+```
+git branch
+git checkout microservice-1
+git merge main
+git push
+```
+- Branch microservice-2
+Our original app code will be changed in this branch so when deployed we can see how the two microservices are isolated from each other.
+```
+git checkout -b microservice-2
+git push -u origin microservice-2
+```
+- To switch to microservice version 2 and merge new code from branch into it
+```
+git branch
+git checkout microservices-2
+git merge main
+git push
+```
+- Make the change to microservices-2, commit and push
+```
+git add .
+git commit -m "message for microservice changed in versiuon 2"
+git push
+```
+
+- The difference between the two branches is below:
+```
+nu@Nestors-MacBook-Air aws-microservices-poc % git diff microservice-1..microservice-2
+... 
+-    response_message = f"Hello {sender_name}, your message will be sent."
++    response_message = f"Hello {sender_name}, your message will be sent to {receiver_name}."
+...
+```
+- Deploy microservices from their proper branches
+```
+git checkout microservice-1 && git pull; git branch && ./deploy.sh default test2.nestorurquiza.com microservice1 1.0.3
+git checkout microservice-2 && git pull; git branch && ./deploy.sh default test2.nestorurquiza.com microservice2 2.0.2
+```
+
+### Release
+Releasing is the process of tagging and registering the status of such tag like whether tests pass or not. TODO: Add a release.sh script that will check any new tag in valid branches and deploy the specific version with deploy.sh.
+
+### Testing
+End to end Testing should be triggered when any new microservice is deployed but API releated e2e tests for the specific microservice should be triggered first and if those pass you might want to push the microservice new version to prod.
+
+### API version management
+Adding a new version of a microservice and using that version from multiple other microservices or UIs is serious business. Logging aggregation, metrics, thressholds and many more SRE concerns have to be considered. Microservices can reduce delivery time significantly but the investment is not little.
+
+### SDLC recommendations
+1. Start from main branch
+2. Once you get a v1 that is good enough then create a branch out of it
+3. release (tag) v1 branch
+4. Keep working on v1 for any fixes needed
+5. Use git cherry-pick to select what to merge from v1 code to main branch every time it is tagged as well as collect changes from other branches into v1
+6. When a new feature demands a new branch, create it out of the main branch into v2, v3 etc. branches
+7. Organizing this requires a lot of transaction costs, which is one of the disadvantages of this modus operandi versus handling all versions at the app layer (treating each microservice as a monolith).
+8. Have a deprecation policy for each version.

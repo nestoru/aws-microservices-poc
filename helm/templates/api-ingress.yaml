@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.appServiceName }}-{{ .Values.majorVersion }}
+  namespace: default
+  annotations:
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/certificate-arn: "{{ .Values.certificateArn }}"
+    alb.ingress.kubernetes.io/group.name: "alb-group1"
+spec:
+  ingressClassName: alb
+  rules:
+  - http:
+      paths:
+      - path: /api/{{ .Values.appServiceName }}/v{{ .Values.majorVersion }}/
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.appServiceName }}-{{ .Values.majorVersion }}
+            port:
+              number: 80

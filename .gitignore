@@ -1,4 +1,23 @@
-.*
-!/.gitignore
 *myenv*
 *credentials*
+dist/
+package/
+venv/
+
+# Local .terraform directories
+**/.terraform/*
+
+# Terraform state files
+**/terraform.tfstate.*
+**/tfplan
+**/local.tfstate
+terraform.tfstate
+
+# Terraform override files
+*.tfvars
+override.tf
+override.tf.json
+
+# Terraform crash logs
+crash.log
+

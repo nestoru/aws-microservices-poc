@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appServiceName }}-{{ .Values.majorVersion }}
+  namespace: default 
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: {{ .Values.appServiceName }}-{{ .Values.majorVersion }} 
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appServiceName }}-{{ .Values.majorVersion }}
+    spec:
+      containers:
+      - name: {{ .Values.appServiceName }}-{{ .Values.majorVersion }}
+        image: {{ .Values.awsAccount }}.dkr.ecr.{{ .Values.awsRegion }}.amazonaws.com/{{ .Values.appServiceName }}:{{ .Values.appVersion }}
+
+        ports:
+        - containerPort: 8080 
+          protocol: TCP
+
+        env:
+        - name: EXPECTED_API_KEY
+          value: "2f5ae96c-b558-4c7b-a590-a501ae1c3f6c"
+        - name: RELEASED_AT
+          value: "{{ now | date "20060102150405" }}"

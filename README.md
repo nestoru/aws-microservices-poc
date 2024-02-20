@@ -167,6 +167,18 @@ git checkout microservice-1 && git pull; git branch && ./deploy.sh default test2
 git checkout microservice-2 && git pull; git branch && ./deploy.sh default test2.nestorurquiza.com microservice2 2.0.2
 ```
 
+### Cleanup
+- Remove the A record (change the data for your specifics) because it is not handled directly by terraform (perhaps using helm delete)
+```
+./remove-a-record-for-alb.sh k8s-albgroup1-46cf93257f-557909173.eu-north-1.elb.amazonaws.com test2.nestorurquiza.com nestorurquiza.com
+- Manually delete the load balancer (perhaps using helm delete)
+```
+- Destroy terraform artifacts
+```
+export TF_LOG=INFO; export KUBE_CONFIG_PATH=~/.kube/config && terraform init && terraform destroy
+```
+- Manually delete the vpc because terraform can't delete it apparently because of the attached security groups
+
 ### Release
 Releasing is the process of tagging and registering the status of such tag like whether tests pass or not. TODO: Add a release.sh script that will check any new tag in valid branches and deploy the specific version with deploy.sh.
 
